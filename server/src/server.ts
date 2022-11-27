@@ -1,11 +1,16 @@
 import express, { json } from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
+import http from 'http';
+import { Server } from 'socket.io';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
 app.use(cors());
 app.use(json());
 app.use(morgan('dev'));
@@ -38,7 +43,17 @@ app.post('/auth/register', async (req, res) => {
   });
 });
 
+io.on('connection', async socket => {
+  console.log(`${socket.id} 연결됨`);
+
+  socket.on('goooodReq', () => {
+    console.log('goooodReq 이벤트 받음');
+
+    socket.emit('goooodRes');
+  });
+});
+
 let port = 4000;
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`server is running at ${port}`);
 });
